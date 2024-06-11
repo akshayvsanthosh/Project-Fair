@@ -1,10 +1,50 @@
-import React from 'react'
+import React, { useState } from 'react'
 import login from "../assets/login.png"
 import FloatingLabel from 'react-bootstrap/FloatingLabel';
 import Form from 'react-bootstrap/Form';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { registerAPI } from '../services/allAPI';
 
 const Auth = ({ insideRegister }) => {
+  const [userData,setUserData] = useState({
+    username:"",email:"",password:""
+  })
+  const navigate = useNavigate()
+
+  console.log(userData);
+
+  const handleRegister= async(e)=>{
+    e.preventDefault()
+    if (userData.username && userData.email && userData.password) {
+      // api call
+      try {
+        const result = await registerAPI(userData)
+        console.log(result);
+        if (result.status==200) {
+          toast.warning(`welcome ${result?.data?.username} please login`)
+          setUserData({
+            username:"",email:"",password:""
+          })
+          navigate('/login')
+        } else {
+          if (result.response.status==406) {
+            toast.error(result.response.data)
+            setUserData({
+              username:"",email:"",password:""
+            })
+          }
+        }
+      } catch (error) {
+        console.log(error);
+      }
+      
+    } else {
+      toast.info("Please fill the form!!")
+    }
+  }
+
   return (
     <div style={{ width: "100%", height: "100vh" }} className='d-flex justify-content-center align-items-center'>
       <div className='container w-75'>
@@ -25,7 +65,7 @@ const Auth = ({ insideRegister }) => {
                     label="Username"
                     className="mb-3"
                   >
-                    <Form.Control type="email" placeholder="Username" />
+                    <Form.Control onChange={e=>setUserData({...userData,username:e.target.value})} value={userData.username} type="text" placeholder="Username" />
                   </FloatingLabel>
                 }
                 <FloatingLabel
@@ -33,15 +73,15 @@ const Auth = ({ insideRegister }) => {
                   label="Email address"
                   className="mb-3"
                 >
-                  <Form.Control type="email" placeholder="name@example.com" />
+                  <Form.Control onChange={e=>setUserData({...userData,email:e.target.value})} value={userData.email} type="email" placeholder="name@example.com" />
                 </FloatingLabel>
                 <FloatingLabel controlId="floatingPassword" label="Password">
-                  <Form.Control type="password" placeholder="Password" />
+                  <Form.Control onChange={e=>setUserData({...userData,password:e.target.value})} value={userData.password} type="password" placeholder="Password" />
                 </FloatingLabel>
                 {
                   insideRegister?
                     <div className="mt-3">
-                      <button className='btn btn-primary mb-2'>Register</button>
+                      <button onClick={handleRegister} className='btn btn-primary mb-2'>Register</button>
                       <p>Already have an Account? Click here to <Link to={'/login'}>Login</Link></p>
                     </div>
                   :
@@ -56,6 +96,8 @@ const Auth = ({ insideRegister }) => {
           </div>
         </div>
       </div>
+
+      <ToastContainer position='top-center' theme='colored' autoClose={3000}/>
     </div>
   )
 }
