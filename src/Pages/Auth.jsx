@@ -5,15 +5,18 @@ import Form from 'react-bootstrap/Form';
 import { Link, useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { registerAPI } from '../services/allAPI';
+import { loginAPI, registerAPI } from '../services/allAPI';
+import Spinner from 'react-bootstrap/Spinner';
+
 
 const Auth = ({ insideRegister }) => {
+  const [isLoggedIn,setIsLoggedIn] = useState(false)
   const [userData,setUserData] = useState({
     username:"",email:"",password:""
   })
   const navigate = useNavigate()
 
-  console.log(userData);
+  // console.log(userData);
 
   const handleRegister= async(e)=>{
     e.preventDefault()
@@ -21,7 +24,7 @@ const Auth = ({ insideRegister }) => {
       // api call
       try {
         const result = await registerAPI(userData)
-        console.log(result);
+        // console.log(result);
         if (result.status==200) {
           toast.warning(`welcome ${result?.data?.username} please login`)
           setUserData({
@@ -30,6 +33,43 @@ const Auth = ({ insideRegister }) => {
           navigate('/login')
         } else {
           if (result.response.status==406) {
+            toast.error(result.response.data)
+            setUserData({
+              username:"",email:"",password:""
+            })
+          }
+        }
+      } catch (error) {
+        console.log(error);
+      }
+      
+    } else {
+      toast.info("Please fill the form!!")
+    }
+  }
+
+  const handleLogin = async(e)=>{
+    e.preventDefault()
+    if (userData.email && userData.password) {
+      // api call
+      try {
+        const result = await loginAPI(userData)
+        console.log(result);
+        if (result.status==200) {
+          setIsLoggedIn(true)
+          sessionStorage.setItem("user",JSON.stringify(result?.data?.user))
+          sessionStorage.setItem("token",result.data.token)
+          
+          setTimeout(() => {
+            // toast.warning(`welcome ${result?.data?.user.username}`)
+            setIsLoggedIn(false)
+            setUserData({
+              username:"",email:"",password:""
+            })
+            navigate('/')
+          }, 2000);
+        } else {
+          if (result.response.status==404) {
             toast.error(result.response.data)
             setUserData({
               username:"",email:"",password:""
@@ -86,7 +126,11 @@ const Auth = ({ insideRegister }) => {
                     </div>
                   :
                   <div className="mt-3">
-                  <button className='btn btn-primary mb-2'>Login</button>
+                  <button onClick={handleLogin} className='btn btn-primary mb-2'>Login
+                  {
+                  isLoggedIn && <Spinner  animation="border" variant="light" />
+                  }
+                  </button>
                   <p>New User? Click here to <Link to={'/register'}>Register</Link></p>
                 </div>
                 }
