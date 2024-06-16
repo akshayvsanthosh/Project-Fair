@@ -15,7 +15,11 @@ const Home = () => {
               <p style={{ textAlign: "justify" }}>
                 Lorem ipsum dolor sit amet consectetur, adipisicing elit. Ducimus iste reiciendis, nobis odio autem optio, soluta molestias quas qui sint ex possimus laborum amet ad consequuntur neque cum eveniet libero!
               </p>
-              <Link to={'/login'} className='btn btn-warning'>START TO EXPLORE</Link>
+              {sessionStorage.getItem("token")?
+                <Link to={'/dashboard'} className='btn btn-warning'>MANAGE YOUR PROJECTS</Link>
+              :
+                <Link to={'/login'} className='btn btn-warning'>START TO EXPLORE</Link>
+              }
             </div>
             <div className='col-lg-6'>
               <img width={"100%"} className='img-fluid' src={landing} alt="Landing" />
