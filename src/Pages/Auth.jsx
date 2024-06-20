@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import login from "../assets/login.png"
 import FloatingLabel from 'react-bootstrap/FloatingLabel';
 import Form from 'react-bootstrap/Form';
@@ -7,9 +7,11 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { loginAPI, registerAPI } from '../services/allAPI';
 import Spinner from 'react-bootstrap/Spinner';
+import { tokenAuthContext } from '../Contexts/AuthContext';
 
 
 const Auth = ({ insideRegister }) => {
+  const {isAuthorised,setIsAuthorised} = useContext(tokenAuthContext)
   const [isLoggedIn,setIsLoggedIn] = useState(false)
   const [userData,setUserData] = useState({
     username:"",email:"",password:""
@@ -59,6 +61,7 @@ const Auth = ({ insideRegister }) => {
           setIsLoggedIn(true)
           sessionStorage.setItem("user",JSON.stringify(result?.data?.user))
           sessionStorage.setItem("token",result.data.token)
+          setIsAuthorised(true)
           
           setTimeout(() => {
             // toast.warning(`welcome ${result?.data?.user.username}`)
